@@ -1,0 +1,192 @@
+swagger: "2.0"
+info:
+  title: Сервис otusgoods
+  version: 1.0.0
+  description: API сервиса otusgoods
+
+schemes:
+  - http
+  - https
+
+basePath: /api
+
+tags:
+  - name: Warehouse
+    description: Сервис резервирования товаров 
+
+paths:
+  /check-reserve-status/{order-id}:
+    get:
+      summary: Проверка резервирования по заказу
+      tags:
+        - Warehouse
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: order-id
+          description: идентификатор заказа
+          required: true
+          type: string
+          x-omitempty: false
+          x-nullable: false
+      responses:
+        500:
+          description: Серверная ошибка
+          schema:
+            $ref: '#/definitions/Error'
+        400:
+          description: Клиентская ошибка
+          schema:
+            $ref: '#/definitions/Error'
+        200:
+          description: Успешное получение статуса резерва
+          schema:
+            $ref: '#/definitions/ReserveStatus'
+  /reserve-order-goods:
+    post:
+      summary: Резервирование товаров
+      tags:
+        - Warehouse
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: request
+          description: Параметры пополнения баланса
+          required: true
+          schema:
+            $ref: '#/definitions/NewReserveParams'
+      responses:
+        500:
+          description: Серверная ошибка
+          schema:
+            $ref: '#/definitions/DefaultStatusResponse'
+        400:
+          description: Клиентская ошибка
+          schema:
+            $ref: '#/definitions/DefaultStatusResponse'
+        200:
+          description: Успешное создание пользователя
+          schema:
+            $ref: '#/definitions/DefaultStatusResponse'
+  /unreserve-goods/{order-id}:
+    delete:
+      tags:
+        - Warehouse
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: order-id
+          description: идентификатор заказа
+          required: true
+          type: string
+          x-omitempty: false
+          x-nullable: false
+      responses:
+        500:
+          description: Серверная ошибка
+          schema:
+            $ref: '#/definitions/DefaultStatusResponse'
+        200:
+          description: Успешное получение данных по балансу
+          schema:
+            $ref: '#/definitions/DefaultStatusResponse'
+  /health:
+    get:
+      summary: Пинг сервиса
+      tags:
+        - Other
+      responses:
+        '200':
+          description: Успех
+          schema:
+            $ref: '#/definitions/DefaultStatusResponse'
+        '500':
+          description: Серверная ошибка
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  NewReserveParams:
+    type: object
+    description: Резервирование товаров по заказу
+    required:
+      - order_id
+    properties:
+      order_id:
+        type: string
+        description: 'Идентификатор заказа'
+        example: "Заказ №123"
+        x-omitempty: false
+        x-nullable: false
+      goods:
+        type: array
+        items:
+          type: object
+          properties:
+            nomenclature:
+              type: string
+              description: 'Идентификатор товара'
+              example: "2"
+              x-omitempty: false
+              x-nullable: false
+            quantity:
+              type: integer
+              description: 'количество товара'
+              x-omitempty: false
+              x-nullable: false
+  ReserveStatus:
+        type: object
+        properties:
+          order_id:
+            type: string
+            description: 'Идентификатор заказа'
+            example: "Заказ №123"
+            x-omitempty: false
+            x-nullable: false
+          reserve_status:
+            type: string
+            description: 'Статус резерва товаров'
+            example: "Confirmed"
+            x-omitempty: false
+            x-nullable: false
+  DefaultStatusResponse:
+    type: object
+    description: Дефолтный положительный ответ
+    required:
+      - message
+      - code
+    properties:
+      code:
+        type: string
+        description: 'Кодовое обозначение ответа'
+        example: "01"
+        x-omitempty: false
+        x-nullable: false
+      message:
+        type: string
+        description: 'Сообщение'
+        example: "Сообщение об успешном выполнении запроса"
+        x-omitempty: false
+        x-nullable: false
+  Error:
+    type: object
+    description: объект ошибки, обязательным является лишь поле сообщения, опционально присутствует код и ряд других полей
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        description: текстовое описание ошибки
+        example: "произошла такая-то ошибка"
+      code:
+        type: integer
+        description: цифровой код ошибки
+        example: 123

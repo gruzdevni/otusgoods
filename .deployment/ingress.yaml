@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: goods-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: goods.internal
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: goods-service-lb
+            port:
+              number: 80
