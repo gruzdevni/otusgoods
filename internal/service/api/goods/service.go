@@ -19,7 +19,7 @@ var ErrNoAvailableGoods = errors.New("Not enough goods for reserve")
 type repo interface {
 	CheckOrderReserve(ctx context.Context, orderID string) ([]query.GoodsReservation, error)
 	DecreaseAvailableGoods(ctx context.Context, arg query.DecreaseAvailableGoodsParams) error
-	GetAvailableGoods(ctx context.Context, id []string) ([]query.AvailableQuantity, error)
+	GetAvailableGoods(ctx context.Context, id []int32) ([]query.AvailableQuantity, error)
 	IncreaseAvailableGoods(ctx context.Context, arg query.IncreaseAvailableGoodsParams) error
 	ReserveGoodsForOrder(ctx context.Context, arg query.ReserveGoodsForOrderParams) error
 	UnreserveGoodsForOrder(ctx context.Context, orderID string) error
@@ -78,13 +78,20 @@ func (s *service) ReserveGoodsForOrder(ctx context.Context, arg models.NewReserv
 		}
 	}()
 
-	goodsIds := lo.Map(arg.Goods, func(item *models.NewReserveParamsGoodsItems0, _ int) string {
-		return item.Nomenclature
-	})
+	goodsIds := make([]int32, 0, len(arg.Goods))
+
+	for _, item := range arg.Goods {
+		id, err := strconv.Atoi(item.Nomenclature)
+		if err != nil {
+			return fmt.Errorf("parsing goods id: %w", err)
+		}
+
+		goodsIds = append(goodsIds, int32(id))
+	}
 
 	res2, err := s.repo.WithTx(tx).GetAvailableGoods(ctx, goodsIds)
 	if err != nil {
-		return fmt.Errorf("getting available slots: %w", err)
+		return fmt.Errorf("getting available goods: %w", err)
 	}
 
 	if len(res2) == 0 {

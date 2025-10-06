@@ -58,10 +58,10 @@ func (q *Queries) DecreaseAvailableGoods(ctx context.Context, arg DecreaseAvaila
 }
 
 const getAvailableGoods = `-- name: GetAvailableGoods :many
-SELECT id, available_quantity FROM available_quantity WHERE id = ANY($1::varchar[])
+SELECT id, available_quantity FROM available_quantity WHERE id = ANY($1::integer[])
 `
 
-func (q *Queries) GetAvailableGoods(ctx context.Context, id []string) ([]AvailableQuantity, error) {
+func (q *Queries) GetAvailableGoods(ctx context.Context, id []int32) ([]AvailableQuantity, error) {
 	rows, err := q.query(ctx, q.getAvailableGoodsStmt, getAvailableGoods, pq.Array(id))
 	if err != nil {
 		return nil, err

@@ -1,5 +1,5 @@
 -- name: GetAvailableGoods :many
-SELECT id, available_quantity FROM available_quantity WHERE id = ANY(@id::varchar[]);
+SELECT id, available_quantity FROM available_quantity WHERE id = ANY(@id::integer[]);
 
 -- name: ReserveGoodsForOrder :exec
 INSERT INTO goods_reservations (order_id, nomenclature_id, quantity_reserved) VALUES ($1, $2, $3);

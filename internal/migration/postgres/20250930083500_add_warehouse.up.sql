@@ -1,6 +1,6 @@
 CREATE TABLE nomenclature(
     id SERIAL PRIMARY KEY,
-    full_name VARCHAR(5) NOT NULL
+    full_name TEXT NOT NULL
 );
 
 INSERT INTO nomenclature (full_name)
