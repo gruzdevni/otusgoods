@@ -98,18 +98,18 @@ func (s *service) ReserveGoodsForOrder(ctx context.Context, arg models.NewReserv
 		return ErrNoAvailableGoods
 	}
 
-	availableMap := lo.Associate(res2, func(item query.AvailableQuantity) (string, int32) {
-		return string(item.ID), item.AvailableQuantity
+	availableMap := lo.Associate(res2, func(item query.AvailableQuantity) (int32, int32) {
+		return item.ID, item.AvailableQuantity
 	})
 
 	for _, item := range arg.Goods {
-		if availableMap[item.Nomenclature]-int32(item.Quantity) < 0 {
-			return ErrNoAvailableGoods
-		}
-
 		id, err := strconv.Atoi(item.Nomenclature)
 		if err != nil {
 			return fmt.Errorf("parsing goods id: %w", err)
+		}
+
+		if availableMap[int32(id)]-int32(item.Quantity) < 0 {
+			return ErrNoAvailableGoods
 		}
 
 		if err = s.repo.WithTx(tx).DecreaseAvailableGoods(ctx, query.DecreaseAvailableGoodsParams{
